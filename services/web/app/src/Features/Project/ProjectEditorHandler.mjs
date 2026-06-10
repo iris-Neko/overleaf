@@ -3,7 +3,13 @@ import Path from 'node:path'
 let ProjectEditorHandler
 
 export default ProjectEditorHandler = {
-  trackChangesAvailable: false,
+  // Community Edition ships without the Server-Pro `track-changes` module, which
+  // would otherwise flip this on. The review panel (and with it the comment
+  // affordance: the on-selection "Add comment" tooltip, the toolbar comment
+  // button and the Review pane) is gated on `features.trackChangesVisible` in
+  // the frontend, so leaving this false hides commenting entirely in CE. Enable
+  // it so comments work; the comment backend lives in CommentsController.mjs.
+  trackChangesAvailable: true,
 
   buildProjectModelView(
     project,
