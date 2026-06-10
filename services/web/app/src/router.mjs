@@ -35,6 +35,7 @@ import ExportsController from './Features/Exports/ExportsController.mjs'
 import PasswordResetRouter from './Features/PasswordReset/PasswordResetRouter.mjs'
 import StaticPagesRouter from './Features/StaticPages/StaticPagesRouter.mjs'
 import ChatController from './Features/Chat/ChatController.mjs'
+import CommentsController from './Features/Chat/CommentsController.mjs'
 import Modules from './infrastructure/Modules.mjs'
 import {
   RateLimiter,
@@ -1047,6 +1048,53 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
       ChatController.editMessage
     )
   }
+
+  // Review-panel comment threads. Note: read-only users can still comment, so
+  // these are gated on read (not write) access, except for thread/message
+  // mutations which require write access.
+  webRouter.get(
+    '/project/:project_id/threads',
+    AuthorizationMiddleware.blockRestrictedUserFromProject,
+    AuthorizationMiddleware.ensureUserCanReadProject,
+    CommentsController.getThreads
+  )
+  webRouter.post(
+    '/project/:project_id/thread/:thread_id/messages',
+    AuthorizationMiddleware.blockRestrictedUserFromProject,
+    AuthorizationMiddleware.ensureUserCanReadProject,
+    CommentsController.sendComment
+  )
+  webRouter.post(
+    '/project/:project_id/doc/:doc_id/thread/:thread_id/resolve',
+    AuthorizationMiddleware.ensureUserCanWriteProjectContent,
+    CommentsController.resolveThread
+  )
+  webRouter.post(
+    '/project/:project_id/doc/:doc_id/thread/:thread_id/reopen',
+    AuthorizationMiddleware.ensureUserCanWriteProjectContent,
+    CommentsController.reopenThread
+  )
+  webRouter.delete(
+    '/project/:project_id/doc/:doc_id/thread/:thread_id',
+    AuthorizationMiddleware.ensureUserCanWriteProjectContent,
+    CommentsController.deleteThread
+  )
+  webRouter.post(
+    '/project/:project_id/thread/:thread_id/messages/:message_id/edit',
+    AuthorizationMiddleware.ensureUserCanWriteProjectContent,
+    CommentsController.editMessage
+  )
+  webRouter.delete(
+    '/project/:project_id/thread/:thread_id/messages/:message_id',
+    AuthorizationMiddleware.ensureUserCanWriteProjectContent,
+    CommentsController.deleteMessage
+  )
+  webRouter.delete(
+    '/project/:project_id/thread/:thread_id/own-messages/:message_id',
+    AuthorizationMiddleware.blockRestrictedUserFromProject,
+    AuthorizationMiddleware.ensureUserCanReadProject,
+    CommentsController.deleteOwnMessage
+  )
 
   webRouter.post(
     '/project/:Project_id/references/indexAll',

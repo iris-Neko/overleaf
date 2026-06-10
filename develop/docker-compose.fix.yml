@@ -1,0 +1,8 @@
+services:
+  redis:
+    ports: !override []
+  mongo:
+    ports: !override []
+  webpack:
+    ports: !override
+      - "127.0.0.1:8000:3808"
