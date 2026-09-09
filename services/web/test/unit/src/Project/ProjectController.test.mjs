@@ -71,6 +71,7 @@ describe('ProjectController', function () {
     ctx.SubscriptionLocator = {
       promises: {
         getUsersSubscription: sinon.stub().resolves(),
+        getUserActiveProfessionalGroupSubscriptions: sinon.stub().resolves(),
       },
     }
     ctx.SubscriptionController = {
@@ -438,8 +439,10 @@ describe('ProjectController', function () {
       '../../../../app/src/Features/Analytics/AnalyticsManager',
       () => ({
         default: {
+          recordEventForSession: () => {},
           recordEventForUserInBackground: () => {},
           setUserPropertyForUserInBackground: () => {},
+          setUserPropertyForSessionInBackground: () => {},
         },
       })
     )
@@ -900,6 +903,18 @@ describe('ProjectController', function () {
       await new Promise(resolve => {
         ctx.res.render = (pageName, opts) => {
           pageName.should.equal('project/ide-react')
+          resolve()
+        }
+        ctx.ProjectController.loadEditor(ctx.req, ctx.res)
+      })
+    })
+
+    it('should request compile-with-checkpoint split test assignment', async function (ctx) {
+      await new Promise(resolve => {
+        ctx.res.render = () => {
+          expect(
+            ctx.SplitTestHandler.promises.getAssignment
+          ).to.have.been.calledWith(ctx.req, ctx.res, 'compile-with-checkpoint')
           resolve()
         }
         ctx.ProjectController.loadEditor(ctx.req, ctx.res)

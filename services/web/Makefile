@@ -1,11 +1,11 @@
 DOCKER_COMPOSE_FLAGS ?= -f docker-compose.yml
 export RETRIES ?= $(if $(CI),3,0)
 
-BUILD_NUMBER ?= local
+export BUILD_NUMBER ?= local
 ifeq ($(BRANCH_NAME),)
   export BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
 endif
-BRANCH_NAME_TAG_SAFE := $(shell echo "$(BRANCH_NAME)" | sed 's/\//\-\-/g' | cut -c1-96)
+export BRANCH_NAME_TAG_SAFE := $(shell echo "$(BRANCH_NAME)" | sed 's/\//\-\-/g' | cut -c1-96)
 
 .PHONY: print-branch-tag-safe
 print-branch-tag-safe:
@@ -14,7 +14,7 @@ print-branch-tag-safe:
 ifeq ($(COMMIT_SHA),)
   export COMMIT_SHA := $(shell git rev-parse HEAD)
 endif
-PROJECT_NAME = web
+export PROJECT_NAME = web
 BUILD_DIR_NAME := web
 PWD := $(shell pwd)
 ifeq ($(MONOREPO),)
@@ -28,11 +28,8 @@ CFG_SAAS=/overleaf/services/web/test/acceptance/config/settings.test.saas.js
 CFG_SERVER_CE=/overleaf/services/web/test/acceptance/config/settings.test.server-ce.js
 CFG_SERVER_PRO=/overleaf/services/web/test/acceptance/config/settings.test.server-pro.js
 
-DOCKER_COMPOSE := BUILD_NUMBER=$(BUILD_NUMBER) \
-	BRANCH_NAME=$(BRANCH_NAME_TAG_SAFE) \
-	PROJECT_NAME=$(PROJECT_NAME) \
-	MOCHA_GREP=${MOCHA_GREP} \
-	docker compose ${DOCKER_COMPOSE_FLAGS}
+export MOCHA_GREP ?=
+DOCKER_COMPOSE := docker compose ${DOCKER_COMPOSE_FLAGS}
 
 # Common flags for docker compose run.
 # --rm           Tear down test runner container
@@ -154,7 +151,7 @@ MOCHA_CMD_LINE = \
 	mocha \
 		--exit \
 		--file test/unit/bootstrap.js \
-		--grep=${MOCHA_GREP} \
+		--grep="${MOCHA_GREP}" \
 		--reporter spec \
 		--timeout 25000 \
 
@@ -178,7 +175,7 @@ test_unit_module: mongo_migrations_for_tests
 	$(MAKE) modules/$(MODULE_NAME)/test_unit
 
 mongo_migrations_for_tests:
-	$(DOCKER_COMPOSE) run $(DC_RUN_FLAGS) --workdir /overleaf/tools/migrations test_unit yarn run migrations migrate -t saas
+	$(DOCKER_COMPOSE) run $(DC_RUN_FLAGS) --workdir /overleaf/tools/migrations test_unit yarn run migrations migrate -t 'saas & !nonblocking'
 
 #
 # Frontend tests
@@ -550,6 +547,10 @@ else
 	$(RUN_LINTING) lint
 endif
 
+lint_fix: lint_eslint_fix
+lint_eslint_fix:
+	$(RUN_LINTING) lint:fix
+
 lint: lint_stylelint
 lint_stylelint:
 ifeq ($(CI),true)
@@ -559,6 +560,7 @@ else
 	$(RUN_LINTING) lint:styles
 endif
 
+lint_fix: lint_stylelint_fix
 lint_stylelint_fix:
 	$(RUN_LINTING) lint:styles:fix
 

@@ -648,6 +648,43 @@ templates.surrenderAccountForManagedUsers = ctaTemplate({
   },
 })
 
+templates.domainReverificationFailed = ctaTemplate({
+  subject(opts) {
+    if (opts.capturedByGroup) {
+      return `Action needed: re-verify ${opts.domain} to keep adding users automatically`
+    }
+    return `${opts.domain} needs re-verifying`
+  },
+  title(opts) {
+    const domain = _.escape(opts.domain)
+    if (opts.capturedByGroup) {
+      return `Action needed: re-verify ${domain}`
+    }
+    return `${domain} needs re-verifying`
+  },
+  message(opts) {
+    const domain = _.escape(opts.domain)
+    if (opts.capturedByGroup) {
+      const date = moment(opts.gracePeriodEndDate).format('MMMM D, YYYY')
+      return [
+        `We weren't able to verify your domain ${domain} during our latest check, so its verification has lapsed.`,
+        `Right now, anyone with an email address at ${domain} is added to your group automatically. If the domain isn't re-verified by ${date}, we'll stop adding them. Existing members aren't affected.`,
+        `To fix this, check that your DNS TXT record still matches the one shown in your group settings. Once it's in place, we'll re-verify the domain automatically.`,
+      ]
+    }
+    return [
+      `We weren't able to verify your domain ${domain} during our latest check, so it's no longer verified.`,
+      `To re-verify it, check that your DNS TXT record still matches the one shown in your group settings. Once it's in place, we'll verify it automatically.`,
+    ]
+  },
+  ctaURL(opts) {
+    return opts.domainSettingsUrl
+  },
+  ctaText() {
+    return 'Go to group settings'
+  },
+})
+
 templates.testEmail = ctaTemplate({
   subject() {
     return `A Test Email from ${settings.appName}`
@@ -1008,6 +1045,51 @@ templates.taxExemptCertificateRequired = NoCTAEmailTemplate({
   },
 })
 
+function taxIdInvalidTemplate({ noun, descriptor }) {
+  return ctaTemplate({
+    subject() {
+      return `Action required: Update your ${noun} on ${settings.appName}`
+    },
+    title() {
+      return `Action required: Update your ${noun}`
+    },
+    greeting() {
+      return 'Hi,'
+    },
+    message() {
+      return [
+        `We're writing to let you know that the ${descriptor} you entered did not validate successfully.`,
+        `Please update your ${noun} on your billing information page:`,
+      ]
+    },
+    secondaryMessage() {
+      return [
+        `If you do not update your ${noun}, your next invoice may be subject to additional taxes.`,
+        'If you require a new invoice, please let us know by replying to this email.',
+      ]
+    },
+    ctaText() {
+      return `Update ${noun}`
+    },
+    ctaURL() {
+      return `${settings.siteUrl}/user/subscription`
+    },
+    footerMessage(opts) {
+      return `Our reference: ${opts.stripeCustomerId}`
+    },
+  })
+}
+
+templates.taxIdInvalidVat = taxIdInvalidTemplate({
+  noun: 'VAT number',
+  descriptor: 'VAT number',
+})
+
+templates.taxIdInvalidNonVat = taxIdInvalidTemplate({
+  noun: 'tax ID',
+  descriptor: 'tax identifier',
+})
+
 templates.groupMemberLimitWarning = ctaTemplate({
   subject(opts) {
     return `Action needed: Your Overleaf group is nearly out of licenses`
@@ -1037,6 +1119,65 @@ templates.groupMemberLimitWarning = ctaTemplate({
   },
   ctaURL() {
     return `${settings.siteUrl}/user/subscription/group/add-users`
+  },
+})
+
+templates.groupDomainCapturedByGroupChanged = ctaTemplate({
+  subject(opts) {
+    return opts.domainCapturedByGroup
+      ? `Domain capture now active for ${opts.domain}`
+      : `Domain capture now inactive for ${opts.domain}`
+  },
+  title(opts) {
+    return opts.domainCapturedByGroup
+      ? `Domain capture is active for ${_.escape(opts.domain)}`
+      : `Domain capture is inactive for ${_.escape(opts.domain)}`
+  },
+  message(opts) {
+    if (opts.domainCapturedByGroup) {
+      return [
+        `Users with a <b>${_.escape(opts.domain)}</b> email address on their account will be able to join your group through domain capture.`,
+      ]
+    }
+    return [
+      `Users with a <b>${_.escape(opts.domain)}</b> email address on their account will no longer be able to join your group through domain capture. Anyone already in your group is unaffected.`,
+      `If you didn't expect this or want to re-enable it, please contact ${settings.adminEmail}.`,
+    ]
+  },
+  ctaText() {
+    return 'Manage domains'
+  },
+  ctaURL(opts) {
+    return `${settings.siteUrl}/manage/groups/${opts.groupId}/settings`
+  },
+})
+
+templates.domainVerifiedForGroup = NoCTAEmailTemplate({
+  subject(opts) {
+    if (opts.capturedByGroup) {
+      return `Your domain is verified`
+    } else {
+      return 'Your domain is verified — ready to capture?'
+    }
+  },
+  message(opts, isPlainText) {
+    const message = [
+      `We've verified <b>${_.escape(opts.domain)}</b> for your Overleaf group.`,
+    ]
+
+    if (opts.capturedByGroup) {
+      message.push(`Your group will continue capturing users with this domain.`)
+    } else {
+      message.push(
+        `To complete the capture, reply to this email and we'll take it from there.`,
+        `Once captured, existing Overleaf users with a <b>${_.escape(opts.domain)}</b> address will be invited to join your group. Until they accept, they won't be able to access Overleaf. New users who sign up with <b>${_.escape(opts.domain)}</b> will be added to your group automatically.`,
+        `You'll receive a confirmation email once the capture is active.`
+      )
+    }
+
+    return message.map(m => {
+      return EmailMessageHelper.cleanHTML(m, isPlainText)
+    })
   },
 })
 

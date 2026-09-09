@@ -13,6 +13,7 @@ vi.mock('../../../../app/src/Features/Analytics/AnalyticsManager.mjs', () => {
   return {
     default: {
       setUserPropertyForUserInBackground: () => {},
+      setUserPropertyForSessionInBackground: () => {},
     },
   }
 })
@@ -136,7 +137,7 @@ describe('ProjectListController', function () {
     ctx.SplitTestHandler = {
       promises: {
         getAssignment: sinon.stub().resolves({ variant: 'default' }),
-        featureFlagEnabledForUser: sinon.stub().resolves(false),
+        featureFlagEnabled: sinon.stub().resolves(false),
         hasUserBeenAssignedToVariant: sinon.stub().resolves(false),
       },
     }

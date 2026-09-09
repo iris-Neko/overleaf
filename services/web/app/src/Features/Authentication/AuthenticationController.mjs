@@ -109,7 +109,7 @@ const AuthenticationController = {
       analyticsId: user.analyticsId || user._id,
       alphaProgram: user.alphaProgram || undefined, // only store if set
       betaProgram: user.betaProgram || undefined, // only store if set
-      labsProgram: user.labsProgram || undefined, // only store if set
+      labsProgram: user.labsProgram, // always store, we could revert about 1 week after deploying this change.
     }
     if (user.isAdmin) {
       lightUser.isAdmin = true
@@ -684,7 +684,7 @@ function _loginAsyncHandlers(req, user, anonymousAnalyticsId, isNewUser) {
   LoginRateLimiter.recordSuccessfulLogin(user.email, () => {})
   AuthenticationController._recordSuccessfulLogin(user._id, () => {})
   AuthenticationController.ipMatchCheck(req, user)
-  Analytics.recordEventForUserInBackground(user._id, 'user-logged-in', {
+  Analytics.recordEventForMongoUserInBackground(user, 'user-logged-in', {
     source: req.session.saml
       ? 'saml'
       : req.user_info?.auth_provider || 'email-password',

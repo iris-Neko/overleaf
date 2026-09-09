@@ -27,6 +27,7 @@ export default function useUserWideSettings() {
     editorTabs,
     nonBlinkingCursor,
     darkModePdf,
+    floatingMenu,
     zotero,
     mendeley,
     papers,
@@ -152,23 +153,30 @@ export default function useUserWideSettings() {
     [saveUserSettings]
   )
 
+  const setFloatingMenu = useCallback(
+    (floatingMenu: UserSettings['floatingMenu']) => {
+      saveUserSettings('floatingMenu', floatingMenu)
+    },
+    [saveUserSettings]
+  )
+
   const setZotero = useCallback(
     (zotero: UserSettings['zotero']) => {
-      saveUserSettings('zotero', { ...zotero, migrated: true })
+      saveUserSettings('zotero', zotero)
     },
     [saveUserSettings]
   )
 
   const setMendeley = useCallback(
     (mendeley: UserSettings['mendeley']) => {
-      saveUserSettings('mendeley', { ...mendeley, migrated: true })
+      saveUserSettings('mendeley', mendeley)
     },
     [saveUserSettings]
   )
 
   const setPapers = useCallback(
     (papers: UserSettings['papers']) => {
-      saveUserSettings('papers', { ...papers, migrated: true })
+      saveUserSettings('papers', papers)
     },
     [saveUserSettings]
   )
@@ -210,6 +218,8 @@ export default function useUserWideSettings() {
     setNonBlinkingCursor,
     darkModePdf,
     setDarkModePdf,
+    floatingMenu,
+    setFloatingMenu,
     zotero,
     setZotero,
     mendeley,
