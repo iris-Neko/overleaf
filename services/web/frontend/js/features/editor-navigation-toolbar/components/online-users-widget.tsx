@@ -16,6 +16,7 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Doc } from '@ol-types/doc'
 import firstCharacter from '@/shared/utils/first-character'
+import UserAvatar from '@/shared/components/user-avatar'
 
 // Should be kept in sync with $max-user-circles-displayed CSS constant
 const MAX_USER_CIRCLES_DISPLAYED = 5
@@ -100,9 +101,9 @@ const OnlineUserCircle = ({ user }: { user: OnlineUser }) => {
         'online-user-circle-light-font': luminance < 0.5,
         'online-user-circle-dark-font': luminance >= 0.5,
       })}
-      style={{ backgroundColor }}
+      style={{ backgroundColor, position: 'relative' }}
     >
-      {character}
+      <UserAvatar userId={user.user_id} fallback={character} />
     </span>
   )
 }

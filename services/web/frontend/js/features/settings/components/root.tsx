@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import getMeta from '../../../utils/meta'
 import EmailsSection from './emails-section'
 import AccountInfoSection from './account-info-section'
+import ProfilePictureSection from './profile-picture-section'
 import ManagedAccountAlert from './managed-account-alert'
 import PasswordSection from './password-section'
 import LinkingSection from './linking-section'
@@ -59,6 +60,7 @@ function SettingsPageContent() {
           <SSOAlert />
           <OLRow>
             <OLCol lg={5}>
+              <ProfilePictureSection />
               <AccountInfoSection />
             </OLCol>
             <OLCol lg={{ span: 5, offset: 1 }}>

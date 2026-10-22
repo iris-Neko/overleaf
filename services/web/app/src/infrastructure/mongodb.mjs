@@ -122,6 +122,7 @@ export const db = {
   teamInvites: internalDb.collection('teamInvites'),
   tokens: internalDb.collection('tokens'),
   userAuditLogEntries: internalDb.collection('userAuditLogEntries'),
+  userAvatars: internalDb.collection('userAvatars'),
   users: internalDb.collection('users'),
   workspaces: internalDb.collection('workspaces'),
   onboardingDataCollection: internalDb.collection('onboardingDataCollection'),

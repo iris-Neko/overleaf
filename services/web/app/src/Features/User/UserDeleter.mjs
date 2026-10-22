@@ -1,6 +1,7 @@
 import { callbackify } from 'node:util'
 import logger from '@overleaf/logger'
 import Settings from '@overleaf/settings'
+import { db } from '../../infrastructure/mongodb.mjs'
 import { User } from '../../models/User.mjs'
 import { DeletedUser } from '../../models/DeletedUser.mjs'
 import { UserAuditLogEntry } from '../../models/UserAuditLogEntry.mjs'
@@ -217,6 +218,8 @@ async function _cleanupUser(user) {
 
   logger.info({ userId }, '[cleanupUser] removing user sessions from Redis')
   await UserSessionsManager.promises.removeSessionsFromRedis(user)
+  logger.info({ userId }, '[cleanupUser] removing profile picture')
+  await db.userAvatars.deleteOne({ _id: userId })
   if (Features.hasFeature('saas')) {
     logger.info({ userId }, '[cleanupUser] cancelling subscription')
     await SubscriptionHandler.promises.cancelSubscription(user)

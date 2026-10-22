@@ -10,6 +10,7 @@ import MaterialIcon from '@/shared/components/material-icon'
 import MessageDropdown from '@/features/chat/components/message-dropdown'
 import { useFeatureFlag } from '@/shared/context/split-test-context'
 import firstCharacter from '@/shared/utils/first-character'
+import UserAvatar from '@/shared/components/user-avatar'
 
 function getAvatarStyle(user?: User) {
   if (!user?.id) {
@@ -50,9 +51,17 @@ export function MessageAndDropdown({
     <div className="message-row">
       {!fromSelf && isLast ? (
         <div className="message-avatar">
-          <div className="avatar" style={getAvatarStyle(message.user)}>
+          <div
+            className="avatar"
+            style={{ ...getAvatarStyle(message.user), position: 'relative' }}
+          >
             {message.user?.id && message.user.email ? (
-              firstCharacter(message.user.first_name || message.user.email)
+              <UserAvatar
+                userId={message.user.id}
+                fallback={firstCharacter(
+                  message.user.first_name || message.user.email
+                )}
+              />
             ) : (
               <MaterialIcon
                 type="delete"

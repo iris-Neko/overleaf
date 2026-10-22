@@ -20,6 +20,7 @@ import NotificationsController from './Features/Notifications/NotificationsContr
 import CollaboratorsRouter from './Features/Collaborators/CollaboratorsRouter.mjs'
 import UserInfoController from './Features/User/UserInfoController.mjs'
 import UserController from './Features/User/UserController.mjs'
+import UserAvatarController from './Features/User/UserAvatarController.mjs'
 import UserEmailsController from './Features/User/UserEmailsController.mjs'
 import UserPagesController from './Features/User/UserPagesController.mjs'
 import TutorialController from './Features/Tutorial/TutorialController.mjs'
@@ -196,6 +197,10 @@ const rateLimiters = {
     points: 10,
     duration: 60,
   }),
+  uploadAvatar: new RateLimiter('upload-avatar', {
+    points: 20,
+    duration: 60,
+  }),
   zipDownload: new RateLimiter('zip-download', {
     points: 10,
     duration: 60,
@@ -341,6 +346,24 @@ async function initialize(webRouter, privateApiRouter, publicApiRouter) {
     '/user/settings',
     AuthenticationController.requireLogin(),
     UserController.updateUserSettings
+  )
+  webRouter.post(
+    '/user/avatar',
+    AuthenticationController.requireLogin(),
+    RateLimiterMiddleware.rateLimit(rateLimiters.uploadAvatar),
+    UserAvatarController.rawBody,
+    UserAvatarController.uploadAvatar
+  )
+  webRouter.delete(
+    '/user/avatar',
+    AuthenticationController.requireLogin(),
+    RateLimiterMiddleware.rateLimit(rateLimiters.uploadAvatar),
+    UserAvatarController.deleteAvatar
+  )
+  webRouter.get(
+    '/user/:user_id/avatar',
+    AuthenticationController.requireLogin(),
+    UserAvatarController.getAvatar
   )
   webRouter.post(
     '/user/password/update',
